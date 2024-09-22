@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Gestión de Usuarios</title>
+    <style>
+        
+        table {
+            margin: auto;
+            text-align: left;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        form, table {
+            width: 100%;
+            max-width: 600px; 
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+        }
+
+        img {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gestión de Usuarios</h1>
+
+    <form id="userForm">
+        <table>
+            <tr>
+                <td><label for="nombre">Nombre:</label></td>
+                <td><input type="text" id="nombre" required></td>
+            </tr>
+            <tr>
+                <td><label for="cedula">Cédula:</label></td>
+                <td><input type="text" id="cedula" required></td>
+            </tr>
+            <tr>
+                <td><label for="edad">Edad:</label></td>
+                <td><input type="number" id="edad" required></td>
+            </tr>
+            <tr>
+                <td><label for="celular">Celular:</label></td>
+                <td><input type="text" id="celular" required></td>
+            </tr>
+            <tr>
+                <td><label for="telefono">Teléfono (opcional):</label></td>
+                <td><input type="text" id="telefono"></td>
+            </tr>
+            <tr>
+                <td><label for="email">Email:</label></td>
+                <td><input type="email" id="email" required></td>
+            </tr>
+            <tr>
+                <td><label for="departamento">Departamento:</label></td>
+                <td>
+                    <select id="departamento" required>
+                        <option value="">Seleccione un departamento</option>
+                        <option value="Cundinamarca">Cundinamarca</option>
+                        <option value="Antioquia">Antioquia</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="ciudad">Ciudad:</label></td>
+                <td>
+                    <select id="ciudad" required>
+                        <option value="">Seleccione una ciudad</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="fechaNacimiento">Fecha de Nacimiento:</label></td>
+                <td><input type="date" id="fechaNacimiento" required></td>
+            </tr>
+            <tr>
+                <td><label for="foto">Foto:</label></td>
+                <td><input type="file" id="foto" required></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button type="submit">Agregar Usuario</button></td>
+            </tr>
+        </table>
+    </form>
+
+    <h2>Lista de Usuarios</h2>
+    <table id="usersTable" border="1">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Edad</th>
+                <th>Celular</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Ciudad</th>
+                <th>Departamento</th>
+                <th>Fecha de Nacimiento</th>
+                <th>Foto</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        </tbody>
+    </table>
+
+    
+    <h2>Buscar Usuario</h2>
+    <table>
+        <tr>
+            <td><label for="buscarCedula">Buscar por cédula:</label></td>
+            <td><input type="text" id="buscarCedula" placeholder="Buscar por cédula"></td>
+        </tr>
+        <tr>
+            <td colspan="2"><button id="buscarCedulaBtn">Buscar por Cédula</button></td>
+        </tr>
+        <tr>
+            <td><label for="buscarNombre">Buscar por nombre:</label></td>
+            <td><input type="text" id="buscarNombre" placeholder="Buscar por nombre"></td>
+        </tr>
+        <tr>
+            <td colspan="2"><button id="buscarNombreBtn">Buscar por Nombre</button></td>
+        </tr>
+    </table>
+
+    
+    <h2>Filtrar Usuarios</h2>
+    <table>
+        <tr>
+            <td><label for="filtrarCiudad">Filtrar por ciudad:</label></td>
+            <td>
+                <select id="filtrarCiudad">
+                    <option value="">Todas las ciudades</option>
+                    <option value="Bogotá">Bogotá</option>
+                    <option value="Medellín">Medellín</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="filtrarDepartamento">Filtrar por departamento:</label></td>
+            <td>
+                <select id="filtrarDepartamento">
+                    <option value="">Todos los departamentos</option>
+                    <option value="Cundinamarca">Cundinamarca</option>
+                    <option value="Antioquia">Antioquia</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2"><button id="filtrarBtn">Filtrar</button></td>
+        </tr>
+    </table>
+
+    <script>
+        
+        const users = []; 
+        let editingIndex = -1;
+
+        const cityOptions = {
+            "Cundinamarca": ["Bogotá"],
+            "Antioquia": ["Medellín"]
+        };
+
+        document.getElementById('departamento').addEventListener('change', function() {
+            const departamento = this.value;
+            const ciudadSelect = document.getElementById('ciudad');
+            ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+
+            if (departamento && cityOptions[departamento]) {
+                cityOptions[departamento].forEach(function(city) {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    ciudadSelect.appendChild(option);
+                });
+            }
+        });
+
+        document.getElementById('userForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+            const cedula = document.getElementById('cedula').value;
+            const edad = document.getElementById('edad').value;
+            const celular = document.getElementById('celular').value;
+            const telefono = document.getElementById('telefono').value || '';
+            const email = document.getElementById('email').value;
+            const ciudad = document.getElementById('ciudad').value;
+            const departamento = document.getElementById('departamento').value;
+            const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+            const foto = document.getElementById('foto').files[0]; // Archivo de foto
+
+            if (editingIndex === -1 && users.some(user => user.cedula === cedula)) {
+                alert("La cédula ya está registrada.");
+                return;
+            }
+
+            const userData = { nombre, cedula, edad, celular, telefono, email, ciudad, departamento, fechaNacimiento, foto };
+
+            if (editingIndex !== -1) {
+                users[editingIndex] = userData;
+                editingIndex = -1;
+                document.querySelector('button[type="submit"]').innerText = 'Agregar Usuario';
+            } else {
+                users.push(userData);
+            }
+
+            renderTable();
+            clearForm();
+        });
+
+        function renderTable() {
+            const tbody = document.getElementById('usersTable').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            users.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.nombre}</td>
+                    <td>${user.cedula}</td>
+                    <td>${user.edad}</td>
+                    <td>${user.celular}</td>
+                    <td>${user.telefono}</td>
+                    <td>${user.email}</td>
+                    <td>${user.ciudad}</td>
+                    <td>${user.departamento}</td>
+                    <td>${user.fechaNacimiento}</td>
+                    <td><img src="${URL.createObjectURL(user.foto)}" alt="Foto" width="50"></td>
+                    <td>
+                        <button onclick="editUser(${index})">Editar</button>
+                        <button onclick="deleteUser(${index})">Borrar</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function editUser(index) {
+            const user = users[index];
+            document.getElementById('nombre').value = user.nombre;
+            document.getElementById('cedula').value = user.cedula;
+            document.getElementById('edad').value = user.edad;
+            document.getElementById('celular').value = user.celular;
+            document.getElementById('telefono').value = user.telefono;
+            document.getElementById('email').value = user.email;
+            document.getElementById('ciudad').value = user.ciudad;
+            document.getElementById('departamento').value = user.departamento;
+            document.getElementById('fechaNacimiento').value = user.fechaNacimiento;
+            document.getElementById('cedula').disabled = true;
+            editingIndex = index;
+            document.querySelector('button[type="submit"]').innerText = 'Actualizar Usuario';
+        }
+
+        function deleteUser(index) {
+            users.splice(index, 1);
+            renderTable();
+        }
+
+        function clearForm() {
+            document.getElementById('userForm').reset();
+            document.getElementById('cedula').disabled = false;
+        }
+    </script>
+</body>
+</html>
+
+
